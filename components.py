@@ -2,7 +2,8 @@ from dash import dcc
 from dash import html
 import dash_leaflet as dl
 import dash_leaflet.express as dlx
-from dash_extensions.javascript import Namespace, arrow_function, assign
+#from dash_extensions.javascript import Namespace, arrow_function, assign
+from lib.javascript import Namespace, arrow_function, assign
 
 import plotly.express as px
 import plotly.graph_objs as go
@@ -33,16 +34,16 @@ logo_cw3e = html.A(html.Img(src='assets/cw3e_logo_80.png', title='CW3E Home', si
 
 ## B-120 forecast points
 
-#point_to_layer = assign('''function(feature, latlng, context){
-#    const {min, max, colorscale, circleOptions, colorProp} = context.props.hideout;
-#    const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
-#    circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
-#    return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker.
-#}''')
+point_to_layer = assign('''function(feature, latlng, context){
+    const {min, max, colorscale, circleOptions, colorProp} = context.props.hideout;
+    const csc = chroma.scale(colorscale).domain([min, max]);  // chroma lib to construct colorscale
+    circleOptions.fillColor = csc(feature.properties[colorProp]);  // set color based on color prop.
+    return L.circleMarker(latlng, circleOptions);  // sender a simple circle marker.
+}''')
 
 fcst_points = dl.GeoJSON(url='assets/fnf_points_proj_tooltip.pbf', format='geobuf', id='fcst-points',
-                         #options=dict(pointToLayer=point_to_layer), cluster=True, superClusterOptions=dict(radius=5),
-                         cluster=True, superClusterOptions=dict(radius=5),
+                         options=dict(pointToLayer=point_to_layer), cluster=True, superClusterOptions=dict(radius=5),
+                         #cluster=True, superClusterOptions=dict(radius=5),
                          hoverStyle=arrow_function(dict(weight=5, color='red', fillColor='red', dashArray='')),
                          hideout=dict(circleOptions=dict(fillOpacity=1, color='red', weight=2, radius=5), colorscale=['cyan'], colorProp='POINT_Y', min=0, max=100))
 
@@ -50,19 +51,19 @@ fcst_points = dl.GeoJSON(url='assets/fnf_points_proj_tooltip.pbf', format='geobu
 ## B-120 watersheds
 
 watershed_style = dict(weight=2, opacity=1, color='darkblue', fillOpacity=0)
-#style_handle = assign('''function(feature, context){
-#    const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
-#    const value = feature.properties[colorProp];  // get value the determines the color
-#    for (let i = 0; i < classes.length; ++i) {
-#        if (value > classes[i]) {
-#            style.fillColor = colorscale[i];  // set the fill color according to the class
-#        }
-#    }
-#    return style;
-#}''')
+style_handle = assign('''function(feature, context){
+    const {classes, colorscale, style, colorProp} = context.props.hideout;  // get props from hideout
+    const value = feature.properties[colorProp];  // get value the determines the color
+    for (let i = 0; i < classes.length; ++i) {
+        if (value > classes[i]) {
+            style.fillColor = colorscale[i];  // set the fill color according to the class
+        }
+    }
+    return style;
+}''')
 
 fcst_watersheds = dl.GeoJSON(url='assets/fnf_watershed_proj_tooltip.pbf', format='geobuf', id='watershed',
-                             #options=dict(style=style_handle),
+                             options=dict(style=style_handle),
                              hoverStyle=arrow_function(dict(weight=4, color='brown', dashArray='', fillOpacity=0)),
                              hideout=dict(colorscale=['darkblue'], classes=[0], style=watershed_style, colorProp='Area_SqMi'))
 
@@ -70,7 +71,7 @@ fcst_watersheds = dl.GeoJSON(url='assets/fnf_watershed_proj_tooltip.pbf', format
 
 cnrfc_style = dict(weight=4, opacity=1, color='gray', fillOpacity=0)
 cnrfc_boundary = dl.GeoJSON(url='assets/cnrfc_bd_degree_wgs84.pbf', format='geobuf', id='cnrfcbd',
-                             #options=dict(style=style_handle),
+                             options=dict(style=style_handle),
                              hideout=dict(colorscale=['black'], classes=[0], style=cnrfc_style, colorProp='Area_SqMi'))
 
 ## image data layer
